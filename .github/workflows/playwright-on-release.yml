@@ -1,89 +1,32 @@
-name: Run Playwright Tests on Release
+name: Playwright Tests with AppImage
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-
-      - name: Install AppImage & GUI dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfuse2 xvfb
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-
-      - name: Start virtual display
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          sleep 3
-
-      - name: Download zipped AppImage from release
-        run: |
-          mkdir -p app
-          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name | endswith(".AppImage.zip")) | .browser_download_url')
-          if [ -z "$URL" ]; then
-            echo "❌ Could not find AppImage .zip in the latest release"
-            exit 1
-          fi
-          echo "⬇️ Downloading AppImage zip from $URL"
-          curl -L -o app/app.zip "$URL"
-          unzip app/app.zip -d app/
-
-      - name: Make AppImage executable
-        run: |
-          APPIMAGE=$(find app -name "*.AppImage")
-          if [ -z "$APPIMAGE" ]; then
-            echo "❌ No .AppImage found after unzipping"
-            exit 1
-          fi
-          chmod +x "$APPIMAGE"
-          echo "APPIMAGE=$APPIMAGE" >> $GITHUB_ENV
-
-      - name: Launch the AppImage
-        run: |
-          nohup $APPIMAGE --no-sandbox > app/app.log 2>&1 &
-          sleep 10
-
-      - name: Check if AppImage started
-        run: |
-          echo "Checking if AppImage is running..."
-          if ! pgrep -f ".AppImage"; then
-            echo "❌ AppImage did not start correctly"
-            [ -f app/app.log ] && cat app/app.log
-            exit 1
-          fi
-          echo "✅ AppImage is running"
-
-      - name: Checkout test code
-        uses: actions/checkout@v3
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Download DevaidStarter AppImage Release
+        run: |
+          curl -L -o DevaidStarter_Dev-4.1.1.AppImage.zip "https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip"
+          unzip DevaidStarter_Dev-4.1.1.AppImage.zip -d ./app
+          chmod +x ./app/DevaidStarter_Dev-4.1.1.AppImage
 
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
-
-      - name: Upload Playwright HTML report
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
-
-      - name: Upload AppImage log (always run)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: appimage-log
-          path: app/app.log

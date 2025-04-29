@@ -1,8 +1,6 @@
 const { describe, test, expect, _electron } = require("@playwright/test");
 const { LoginPage } = require("../../pages/LoginPage");
-const path = require('path');
 const { appImage } = require('../../config');
-
 
 describe("[Functional Test] Starter login", () => {
   //Variable declaration
@@ -15,9 +13,8 @@ describe("[Functional Test] Starter login", () => {
 
   // 2. Electron configuration
   test.beforeEach(async () => {
-    const resolvedAppImage = path.resolve(__dirname, '../../', appImage); // resolves to the full path
     electronApp = await _electron.launch({
-        executablePath: resolvedAppImage,
+        executablePath: appImage,
     });
 
     window = await electronApp.firstWindow();
