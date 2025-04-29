@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     
     steps:
     - name: Checkout repository
@@ -16,21 +16,18 @@ jobs:
         wget https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip -O app.zip
         unzip app.zip -d app
         chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
-        # Verify the AppImage is executable
-        ls -la app/
-        file app/DevaidStarter_Dev-4.1.1.AppImage
+        mkdir -p app
         
-    - name: Install system dependencies
+    - name: Install system dependencies (Ubuntu 24.04 compatible)
       run: |
         sudo apt-get update
-        # Comprehensive dependencies for Electron and GUI
+        # Updated package names for Ubuntu 24.04
         sudo apt-get install -y \
-          libgtk-3-0 \
+          libgtk-4-1 \
           libnss3 \
-          libasound2 \
+          libasound2t64 \
           libxss1 \
           libgbm1 \
-          libgconf-2-4 \
           libatk1.0-0 \
           libatk-bridge2.0-0 \
           libdrm2 \
@@ -41,7 +38,7 @@ jobs:
           libwayland-client0 \
           libwayland-server0 \
           libxshmfence1 \
-          fuse \
+          fuse3 \
           libfuse2
         
         # AppImage specific setup
@@ -52,16 +49,14 @@ jobs:
         
     - name: Set up virtual display
       run: |
-        # Install Xvfb and other display requirements
         sudo apt-get install -y xvfb libxv1 x11-utils
-        # Start virtual display
         Xvfb :99 -screen 0 1280x1024x24 >/dev/null 2>&1 &
         echo "DISPLAY=:99" >> $GITHUB_ENV
         
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 20
         
     - name: Install dependencies
       run: npm ci
@@ -71,16 +66,13 @@ jobs:
       
     - name: Debug AppImage execution
       run: |
-        # Try running the AppImage directly
+        # Verify the AppImage can run
         ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
-        # Check library dependencies
+        # Check dependencies
         ldd ./app/DevaidStarter_Dev-4.1.1.AppImage || true
-        # Check for missing libraries
-        LD_DEBUG=libs ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
         
-    - name: Run Playwright tests with tracing
-      run: |
-        npx playwright test --trace on
+    - name: Run Playwright tests
+      run: npx playwright test --trace on
       env:
         ELECTRON_ENABLE_LOGGING: 1
         DEBUG: electron*
@@ -93,5 +85,4 @@ jobs:
         path: |
           test-results/
           playwright-report/
-          app/DevaidStarter_Dev-4.1.1.AppImage
         retention-days: 7
