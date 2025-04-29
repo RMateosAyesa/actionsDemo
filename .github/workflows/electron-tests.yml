@@ -1,7 +1,7 @@
 name: Electron App Tests
 
 on:
-  workflow_dispatch: # Allows manual triggering from GitHub UI
+  workflow_dispatch:
 
 jobs:
   test:
@@ -16,7 +16,24 @@ jobs:
         wget https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip -O app.zip
         unzip app.zip -d app
         chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
-        echo "APP_PATH=$(pwd)/app/DevaidStarter_Dev-4.1.1.AppImage" >> $GITHUB_ENV
+        mkdir -p app  # Ensure app directory exists
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-0 libnss3 libasound2 libxss1 libgbm1
+        sudo apt-get install -y fuse libfuse2
+        sudo modprobe fuse
+        sudo groupadd fuse
+        sudo usermod -a -G fuse $USER
+        sudo chown root:fuse /dev/fuse
+        sudo chmod 660 /dev/fuse
+        
+    - name: Verify AppImage
+      run: |
+        ls -la app/
+        file app/DevaidStarter_Dev-4.1.1.AppImage
+        ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
         
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -29,17 +46,21 @@ jobs:
     - name: Install Playwright
       run: npx playwright install --with-deps
       
+    - name: Start Xvfb (virtual framebuffer)
+      run: |
+        Xvfb :99 -screen 0 1280x1024x24 &
+        sleep 3
+        export DISPLAY=:99
+        
     - name: Run Playwright tests
       run: npx playwright test
-      env:
-        ELECTRON_APP_PATH: ${{ env.APP_PATH }}
-        
+      
     - name: Generate HTML report
       if: always()
       run: npx playwright show-report
       
     - name: Upload HTML report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: playwright-html-report

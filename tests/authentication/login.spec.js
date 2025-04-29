@@ -19,7 +19,13 @@ describe("[Functional Test] Starter login", () => {
 
     electronApp = await _electron.launch({
         executablePath: appImage,
+        args: ['--no-sandbox'],
+        timeout: 60000
     });
+
+    if (!electronApp) {
+      throw new Error(`Electron app failed to launch using path: ${appImage}`);
+    }
 
     window = await electronApp.firstWindow();
     await window.waitForLoadState();
