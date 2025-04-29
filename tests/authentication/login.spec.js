@@ -13,19 +13,9 @@ describe("[Functional Test] Starter login", () => {
 
   // 2. Electron configuration
   test.beforeEach(async () => {
-  console.log('App path:', appImage);
-  console.log('Exists:', fs.existsSync(appImage));
-  console.log('Executable:', (fs.statSync(appImage).mode & 0o111) ? 'Yes' : 'No');
-
     electronApp = await _electron.launch({
         executablePath: appImage,
-        args: ['--no-sandbox'],
-        timeout: 60000
     });
-
-    if (!electronApp) {
-      throw new Error(`Electron app failed to launch using path: ${appImage}`);
-    }
 
     window = await electronApp.firstWindow();
     await window.waitForLoadState();
