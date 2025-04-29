@@ -25,7 +25,7 @@ jobs:
     - name: Set up Electron app image
       run: |
         # Download the AppImage and make it executable
-        curl -L -o DevaidStarter_Dev-4.1.1.AppImage https://your-download-url.com/DevaidStarter_Dev-4.1.1.AppImage
+        curl -L -o DevaidStarter_Dev-4.1.1.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip
         chmod +x DevaidStarter_Dev-4.1.1.AppImage
         # Make sure it's in the correct directory for your tests
         mv DevaidStarter_Dev-4.1.1.AppImage ./DevaidStarter_Dev-4.1.1.AppImage
