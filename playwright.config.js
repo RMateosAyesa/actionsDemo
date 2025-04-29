@@ -1,7 +1,16 @@
-const { defineConfig } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
-module.exports = defineConfig({
-  workers: 1, // 👈 run all tests sequentially
+export default defineConfig({
+  testDir: './tests',
+  timeout: 30 * 1000,
+  expect: {
+    timeout: 5000
+  },
+  fullyParallel: true,
   reporter: 'html',
-  timeout: 30000, // optional: extend default timeout if needed
+  use: {
+    launchOptions: {
+      executablePath: process.env.ELECTRON_APP_PATH
+    }
+  }
 });
