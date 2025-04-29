@@ -31,10 +31,20 @@ jobs:
       - name: Make AppImage executable
         run: chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
 
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 xvfb
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 & export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
       - name: Launch the AppImage
         run: |
-          ./app/DevaidStarter_Dev-4.1.1.AppImage > app.log 2>&1 &
-          echo "AppImage started in background"
+          ./app/DevaidStarter_Dev-4.1.1.AppImage > app/app.log 2>&1 &
+
 
       - name: Checkout test code
         uses: actions/checkout@v3
@@ -51,7 +61,7 @@ jobs:
           sleep 10
           if ! pgrep -f "DevaidStarter_Dev-4.1.1.AppImage"; then
             echo "❌ AppImage did not start correctly"
-            cat app.log || true
+            cat app/app.log || true
             exit 1
           fi
           echo "✅ AppImage running"
