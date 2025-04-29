@@ -15,19 +15,26 @@ jobs:
         with:
           node-version: 18
 
-      - name: Download zipped AppImage from release
+      - name: Download AppImage ZIP from release
         run: |
           mkdir -p app
-          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
+          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
+            | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
+          if [ -z "$URL" ]; then
+            echo "AppImage ZIP not found in release assets"
+            exit 1
+          fi
           echo "Downloading from $URL"
-          curl -L -o app/app.zip "$URL"
+          curl -L "$URL" -o app/app.zip
           unzip app/app.zip -d app/
 
       - name: Make AppImage executable
         run: chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
 
       - name: Launch the AppImage
-        run: ./app/DevaidStarter_Dev-4.1.1.AppImage &
+        run: |
+          ./app/DevaidStarter_Dev-4.1.1.AppImage > app.log 2>&1 &
+          echo "AppImage started in background"
 
       - name: Checkout test code
         uses: actions/checkout@v3
@@ -39,7 +46,15 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Wait for app to start
-        run: sleep 5
+        run: |
+          echo "Waiting for app to start..."
+          sleep 10
+          if ! pgrep -f "DevaidStarter_Dev-4.1.1.AppImage"; then
+            echo "❌ AppImage did not start correctly"
+            cat app.log || true
+            exit 1
+          fi
+          echo "✅ AppImage running"
 
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
