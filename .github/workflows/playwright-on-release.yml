@@ -1,38 +1,52 @@
-name: Playwright Tests with AppImage
+name: Run Playwright Electron Tests
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Install system dependencies for Electron
         run: |
-          npm ci
+          sudo apt update
+          sudo apt install -y \
+            libgtk-3-0 libnss3 libxss1 libasound2 libatk-bridge2.0-0 \
+            libxcomposite1 libxrandr2 libgbm1 libxdamage1 libpango-1.0-0 \
+            libcups2 libxshmfence1 xvfb unzip wget
 
-      - name: Download DevaidStarter AppImage Release
+      - name: Download AppImage from latest release
         run: |
-          curl -L -o DevaidStarter_Dev-4.1.1.AppImage.zip "https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip"
-          mkdir -p ./app
-          unzip DevaidStarter_Dev-4.1.1.AppImage.zip -d ./app
-          chmod +x ./app/DevaidStarter_Dev-4.1.1.AppImage
+          mkdir -p app
+          cd app
+          wget https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip
+          unzip DevaidStarter_Dev-4.1.1.AppImage.zip
+          chmod +x DevaidStarter_Dev-4.1.1.AppImage
+          cd ..
 
-      - name: Test AppImage launch manually
-        run: ./app/DevaidStarter_Dev-4.1.1.AppImage --help || echo "AppImage failed to launch"
-
-      - name: List AppImage file
+      - name: Debug AppImage path
         run: |
-          ls -al ./app
+          echo "App path: ./app/DevaidStarter_Dev-4.1.1.AppImage"
+          ls -la ./app
 
-      - name: Run Playwright tests
-        run: npx playwright test --reporter=html
+      - name: Run Playwright tests with xvfb
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' npx playwright test --reporter=html
+
+      # Optional fallback: Extract AppImage if execution fails
+      # - name: Extract AppImage if needed
+      #   run: |
+      #     ./app/DevaidStarter_Dev-4.1.1.AppImage --appimage-extract
+      #     chmod +x squashfs-root/AppRun
+      #     echo "Extracted AppRun path: squashfs-root/AppRun"
