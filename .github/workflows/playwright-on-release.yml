@@ -29,23 +29,34 @@ jobs:
       - name: Download zipped AppImage from release
         run: |
           mkdir -p app
-          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
-          echo "Downloading from $URL"
+          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name | endswith(".AppImage.zip")) | .browser_download_url')
+          if [ -z "$URL" ]; then
+            echo "❌ Could not find AppImage .zip in the latest release"
+            exit 1
+          fi
+          echo "⬇️ Downloading AppImage zip from $URL"
           curl -L -o app/app.zip "$URL"
           unzip app/app.zip -d app/
 
       - name: Make AppImage executable
-        run: chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
+        run: |
+          APPIMAGE=$(find app -name "*.AppImage")
+          if [ -z "$APPIMAGE" ]; then
+            echo "❌ No .AppImage found after unzipping"
+            exit 1
+          fi
+          chmod +x "$APPIMAGE"
+          echo "APPIMAGE=$APPIMAGE" >> $GITHUB_ENV
 
       - name: Launch the AppImage
         run: |
-          ./app/DevaidStarter_Dev-4.1.1.AppImage --no-sandbox > app/app.log 2>&1 &
+          nohup $APPIMAGE --no-sandbox > app/app.log 2>&1 &
           sleep 10
 
       - name: Check if AppImage started
         run: |
           echo "Checking if AppImage is running..."
-          if ! pgrep -f "DevaidStarter_Dev-4.1.1.AppImage"; then
+          if ! pgrep -f ".AppImage"; then
             echo "❌ AppImage did not start correctly"
             [ -f app/app.log ] && cat app/app.log
             exit 1
