@@ -18,7 +18,7 @@ jobs:
       - name: Download zipped AppImage from release
         run: |
           mkdir -p app
-          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.zip") | .browser_download_url')
+          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
           echo "Downloading from $URL"
           curl -L -o app/app.zip "$URL"
           unzip app/app.zip -d app/
