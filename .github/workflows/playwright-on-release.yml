@@ -15,36 +15,42 @@ jobs:
         with:
           node-version: 18
 
-      - name: Download AppImage ZIP from release
+      - name: Install AppImage & GUI dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 xvfb
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Start virtual display
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3
+
+      - name: Download zipped AppImage from release
         run: |
           mkdir -p app
-          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
-            | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
-          if [ -z "$URL" ]; then
-            echo "AppImage ZIP not found in release assets"
-            exit 1
-          fi
+          URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[] | select(.name == "DevaidStarter_Dev-4.1.1.AppImage.zip") | .browser_download_url')
           echo "Downloading from $URL"
-          curl -L "$URL" -o app/app.zip
+          curl -L -o app/app.zip "$URL"
           unzip app/app.zip -d app/
 
       - name: Make AppImage executable
         run: chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
 
-      - name: Install required packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfuse2 xvfb
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 & export DISPLAY=:99
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-
       - name: Launch the AppImage
         run: |
           ./app/DevaidStarter_Dev-4.1.1.AppImage > app/app.log 2>&1 &
+          sleep 10
 
+      - name: Check if AppImage started
+        run: |
+          echo "Checking if AppImage is running..."
+          if ! pgrep -f "DevaidStarter_Dev-4.1.1.AppImage"; then
+            echo "❌ AppImage did not start correctly"
+            [ -f app/app.log ] && cat app/app.log
+            exit 1
+          fi
+          echo "✅ AppImage is running"
 
       - name: Checkout test code
         uses: actions/checkout@v3
@@ -55,17 +61,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Wait for app to start
-        run: |
-          echo "Waiting for app to start..."
-          sleep 10
-          if ! pgrep -f "DevaidStarter_Dev-4.1.1.AppImage"; then
-            echo "❌ AppImage did not start correctly"
-            cat app/app.log || true
-            exit 1
-          fi
-          echo "✅ AppImage running"
-
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
 
@@ -74,3 +69,10 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+
+      - name: Upload AppImage log (always run)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-log
+          path: app/app.log
