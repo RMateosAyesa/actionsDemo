@@ -13,9 +13,9 @@ describe("[Functional Test] Starter login", () => {
 
   // 2. Electron configuration
   test.beforeEach(async () => {
-    const fs = require('fs');
-    console.log('App path:', appImage);
-    console.log('Exists:', fs.existsSync(appImage));
+  console.log('App path:', appImage);
+  console.log('Exists:', fs.existsSync(appImage));
+  console.log('Executable:', (fs.statSync(appImage).mode & 0o111) ? 'Yes' : 'No');
 
     electronApp = await _electron.launch({
         executablePath: appImage,
@@ -51,7 +51,7 @@ describe("[Functional Test] Starter login", () => {
   // 4. Electron close application
   test.afterEach(async () => {
     if (electronApp) {
-      await electronApp.close();
+      await electronApp.close().catch(e => console.error('Close error:', e));
     }
   });
 });

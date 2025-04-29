@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04  # Explicitly use Ubuntu 24.04
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
@@ -16,30 +16,52 @@ jobs:
         wget https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip -O app.zip
         unzip app.zip -d app
         chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
-        mkdir -p app  # Ensure app directory exists
+        # Verify the AppImage is executable
+        ls -la app/
+        file app/DevaidStarter_Dev-4.1.1.AppImage
         
-    - name: Install system dependencies (Ubuntu 24.04 specific)
+    - name: Install system dependencies
       run: |
         sudo apt-get update
-        # Updated package names for Ubuntu 24.04
-        sudo apt-get install -y libgtk-4-1 libnss3 libasound2t64 libxss1 libgbm1
-        sudo apt-get install -y fuse3 libfuse2
+        # Comprehensive dependencies for Electron and GUI
+        sudo apt-get install -y \
+          libgtk-3-0 \
+          libnss3 \
+          libasound2 \
+          libxss1 \
+          libgbm1 \
+          libgconf-2-4 \
+          libatk1.0-0 \
+          libatk-bridge2.0-0 \
+          libdrm2 \
+          libxkbcommon0 \
+          libxcomposite1 \
+          libxdamage1 \
+          libxrandr2 \
+          libwayland-client0 \
+          libwayland-server0 \
+          libxshmfence1 \
+          fuse \
+          libfuse2
+        
+        # AppImage specific setup
         sudo modprobe fuse
         sudo groupadd fuse
         sudo usermod -a -G fuse $USER
-        sudo chown root:fuse /dev/fuse
         sudo chmod 660 /dev/fuse
         
-    - name: Verify AppImage
+    - name: Set up virtual display
       run: |
-        ls -la app/
-        file app/DevaidStarter_Dev-4.1.1.AppImage
-        ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
+        # Install Xvfb and other display requirements
+        sudo apt-get install -y xvfb libxv1 x11-utils
+        # Start virtual display
+        Xvfb :99 -screen 0 1280x1024x24 >/dev/null 2>&1 &
+        echo "DISPLAY=:99" >> $GITHUB_ENV
         
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 20  # Updated to Node.js 20 (LTS)
+        node-version: 18
         
     - name: Install dependencies
       run: npm ci
@@ -47,23 +69,29 @@ jobs:
     - name: Install Playwright
       run: npx playwright install --with-deps
       
-    - name: Start Xvfb (virtual framebuffer)
+    - name: Debug AppImage execution
       run: |
-        Xvfb :99 -screen 0 1280x1024x24 &
-        sleep 3
-        export DISPLAY=:99
+        # Try running the AppImage directly
+        ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
+        # Check library dependencies
+        ldd ./app/DevaidStarter_Dev-4.1.1.AppImage || true
+        # Check for missing libraries
+        LD_DEBUG=libs ./app/DevaidStarter_Dev-4.1.1.AppImage --version || true
         
-    - name: Run Playwright tests
-      run: npx playwright test
-      
-    - name: Generate HTML report
-      if: always()
-      run: npx playwright show-report
-      
-    - name: Upload HTML report
+    - name: Run Playwright tests with tracing
+      run: |
+        npx playwright test --trace on
+      env:
+        ELECTRON_ENABLE_LOGGING: 1
+        DEBUG: electron*
+        
+    - name: Upload test artifacts
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: playwright-html-report
-        path: playwright-report/
+        name: test-results
+        path: |
+          test-results/
+          playwright-report/
+          app/DevaidStarter_Dev-4.1.1.AppImage
         retention-days: 7
