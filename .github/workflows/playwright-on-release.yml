@@ -23,9 +23,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-            libgtk-3-0 libnss3 libxss1 libasound2 libatk-bridge2.0-0 \
+            libgtk-3-0 libnss3 libxss1 libatk-bridge2.0-0 \
             libxcomposite1 libxrandr2 libgbm1 libxdamage1 libpango-1.0-0 \
-            libcups2 libxshmfence1 xvfb unzip wget
+            libcups2 libxshmfence1 libasound2t64 xvfb unzip wget
 
       - name: Download AppImage from latest release
         run: |
