@@ -23,8 +23,12 @@ jobs:
       - name: Download DevaidStarter AppImage Release
         run: |
           curl -L -o DevaidStarter_Dev-4.1.1.AppImage.zip "https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1-dev/DevaidStarter_Dev-4.1.1.AppImage.zip"
+          mkdir -p ./app
           unzip DevaidStarter_Dev-4.1.1.AppImage.zip -d ./app
           chmod +x ./app/DevaidStarter_Dev-4.1.1.AppImage
+
+      - name: Test AppImage launch manually
+        run: ./app/DevaidStarter_Dev-4.1.1.AppImage --help || echo "AppImage failed to launch"
 
       - name: List AppImage file
         run: |
