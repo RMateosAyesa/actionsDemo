@@ -26,5 +26,9 @@ jobs:
           unzip DevaidStarter_Dev-4.1.1.AppImage.zip -d ./app
           chmod +x ./app/DevaidStarter_Dev-4.1.1.AppImage
 
+      - name: List AppImage file
+        run: |
+          ls -al ./app
+
       - name: Run Playwright tests
         run: npx playwright test --reporter=html

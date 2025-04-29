@@ -13,6 +13,10 @@ describe("[Functional Test] Starter login", () => {
 
   // 2. Electron configuration
   test.beforeEach(async () => {
+    const fs = require('fs');
+    console.log('App path:', appImage);
+    console.log('Exists:', fs.existsSync(appImage));
+
     electronApp = await _electron.launch({
         executablePath: appImage,
     });
@@ -40,6 +44,8 @@ describe("[Functional Test] Starter login", () => {
 
   // 4. Electron close application
   test.afterEach(async () => {
-    await electronApp.close();
+    if (electronApp) {
+      await electronApp.close();
+    }
   });
 });
