@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # Explicitly use Ubuntu 24.04
     
     steps:
     - name: Checkout repository
@@ -18,11 +18,12 @@ jobs:
         chmod +x app/DevaidStarter_Dev-4.1.1.AppImage
         mkdir -p app  # Ensure app directory exists
         
-    - name: Install system dependencies
+    - name: Install system dependencies (Ubuntu 24.04 specific)
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtk-3-0 libnss3 libasound2 libxss1 libgbm1
-        sudo apt-get install -y fuse libfuse2
+        # Updated package names for Ubuntu 24.04
+        sudo apt-get install -y libgtk-4-1 libnss3 libasound2t64 libxss1 libgbm1
+        sudo apt-get install -y fuse3 libfuse2
         sudo modprobe fuse
         sudo groupadd fuse
         sudo usermod -a -G fuse $USER
@@ -38,7 +39,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 20  # Updated to Node.js 20 (LTS)
         
     - name: Install dependencies
       run: npm ci
