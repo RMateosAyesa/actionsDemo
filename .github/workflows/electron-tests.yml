@@ -24,8 +24,11 @@ jobs:
 
       - name: Download AppImage
         run: |
-          curl -L -o DevaidStarter.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
-          chmod +x ./DevaidStarter.AppImage
+          curl -L -o DevaidStarter_Dev-4.1.1.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
+          chmod +x ./DevaidStarter_Dev-4.1.1.AppImage
+
+      - name: List files in workspace
+        run: ls -lh
 
       - name: Launch AppImage
         run: |
