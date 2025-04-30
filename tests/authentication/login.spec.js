@@ -40,8 +40,6 @@ describe("[Functional Test] Starter login", () => {
 
   // 4. Electron close application
   test.afterEach(async () => {
-    if (electronApp) {
-      await electronApp.close().catch(e => console.error('Close error:', e));
-    }
+    await electronApp.close();
   });
 });
