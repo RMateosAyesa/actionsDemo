@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Electron dependencies
+        run: sudo apt-get update && sudo apt-get install -y libglib2.0-0 libnss3 libxss1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
