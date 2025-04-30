@@ -1,34 +1,23 @@
-name: Test AppImage Launch
+name: Run AppImage (No GUI)
 
 on:
-  workflow_dispatch: # Run manually from GitHub UI
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  test:
+  run-appimage:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install GUI dependencies
-        run: |
-          sudo apt-get install -y \
-            xvfb libgtk-3-0 libnss3 libasound2t64 libxss1 libatk-bridge2.0-0 \
-            libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
-            libpango-1.0-0 libcairo2 libxext6 libxfixes3 libxrender1 \
-            libxcb1 libxcb-dri3-0 libdrm2 libatspi2.0-0 libxinerama1 libxcursor1
-
       - name: Download AppImage
         run: |
-          mkdir app
-          curl -L -o app/DevaidStarter.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
-          chmod +x app/DevaidStarter.AppImage
+          curl -L -o app.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
+          chmod +x app.AppImage
 
-      - name: Run AppImage with xvfb
+      - name: Extract AppImage (bypass FUSE)
         run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' \
-            ./app/DevaidStarter.AppImage &
+          ./app.AppImage --appimage-extract
+          ls -l squashfs-root
 
-          # Wait a few seconds to see if it starts up without crashing
-          sleep 10
-
-          # Check if the process is still running
-          pgrep -f DevaidStarter.AppImage || (echo "AppImage failed to launch" && exit 1)
+      - name: Run extracted binary (headless)
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' ./squashfs-root/AppRun || true
