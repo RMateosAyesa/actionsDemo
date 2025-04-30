@@ -10,11 +10,10 @@ jobs:
     steps:
       - name: Install GUI dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y \
-            xvfb libgtk-3-0 libnss3 libasound2 libxss1 libatk-bridge2.0-0 \
-            libgtk-3-0 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 \
-            libgbm1 libpango-1.0-0 libcairo2 libxext6 libxfixes3 libxrender1 \
+            xvfb libgtk-3-0 libnss3 libasound2t64 libxss1 libatk-bridge2.0-0 \
+            libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
+            libpango-1.0-0 libcairo2 libxext6 libxfixes3 libxrender1 \
             libxcb1 libxcb-dri3-0 libdrm2 libatspi2.0-0 libxinerama1 libxcursor1
 
       - name: Download AppImage
