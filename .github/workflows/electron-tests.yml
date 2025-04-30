@@ -1,13 +1,25 @@
-name: Run AppImage (No GUI)
+name: Run AppImage and Execute Playwright Tests
 
 on:
   workflow_dispatch:  # Manual trigger
 
 jobs:
-  run-appimage:
+  run-appimage-and-tests:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
       - name: Download AppImage
         run: |
           curl -L -o app.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
@@ -18,6 +30,11 @@ jobs:
           ./app.AppImage --appimage-extract
           ls -l squashfs-root
 
-      - name: Run extracted binary (headless)
+      - name: Run AppImage (headless)
         run: |
           xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' ./squashfs-root/AppRun || true
+
+      - name: Run Playwright tests
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npx playwright test
+
