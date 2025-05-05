@@ -1,13 +1,6 @@
-// playwright.config.js
-const { defineConfig } = require('@playwright/test');
+import { defineConfig } from '@playwright/test';
 
-module.exports = defineConfig({
-  use: {
-    headless: false, // run with GUI for Electron/Desktop app
-    viewport: { width: 1280, height: 720 },
-    launchOptions: {
-      slowMo: 100, // optional, helps debug flaky UI
-    },
-  },
-  reporter: [['html', { outputFolder: 'playwright-report' }]],
+export default defineConfig({
+  reporter: [['html', { outputFolder: 'playwright-report', open: 'never' }]],
+  // ...tu configuración actual
 });

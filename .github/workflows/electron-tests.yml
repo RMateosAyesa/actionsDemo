@@ -1,40 +1,36 @@
-name: Run AppImage and Execute Playwright Tests
+name: Run Electron App Tests
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch: 
 
 jobs:
-  run-appimage-and-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt update
+          sudo apt install -y xvfb libgtk-3-dev libnss3 libasound2
+
+      - name: Instalar dependencias del proyecto
+        run: |
+          npm ci
+
+      - name: Instalar navegadores de Playwright
+        run: |
+          npx playwright install --with-deps
+
+      - name: Ejecutar app Electron y tests
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npm run test
+
+      - name: Guardar reporte de resultados (si tienes uno)
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: |
-          npm install
-
-      - name: Download AppImage
-        run: |
-          curl -L -o app.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
-          chmod +x app.AppImage
-
-      - name: Extract AppImage (bypass FUSE)
-        run: |
-          ./app.AppImage --appimage-extract
-          ls -l squashfs-root
-
-      - name: Run AppImage (headless)
-        run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' ./squashfs-root/AppRun || true
-
-      - name: Run Playwright tests
-        run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npx playwright test
-
+          name: playwright-report
+          path: playwright-report/
