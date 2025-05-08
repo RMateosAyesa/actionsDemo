@@ -13,9 +13,14 @@ describe("[Functional Test] Starter login", () => {
 
   // 2. Electron configuration
   test.beforeEach(async () => {
-    electronApp = await _electron.launch({
+    try {
+      electronApp = await _electron.launch({
         executablePath: appImage,
-    });
+      });
+    } catch (error) {
+      console.error("Error launching Electron app:", error);
+      throw error; // Re-lanzamos para no ocultar el fallo
+    }
 
     window = await electronApp.firstWindow();
     await window.waitForLoadState();
@@ -40,6 +45,8 @@ describe("[Functional Test] Starter login", () => {
 
   // 4. Electron close application
   test.afterEach(async () => {
-    await electronApp.close();
-  });
+    if (electronApp) {
+      await electronApp.close();
+    }
+  });  
 });
