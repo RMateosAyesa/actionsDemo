@@ -45,9 +45,8 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Test if AppImage launches
-      run: ./app/DevaidStarter_Dev-4.1.1.AppImage --version
-
+    - name: Start Electron App
+      run: ./start-electron.sh    
 
     - name: Install Playwright browsers
       run: npx playwright install
