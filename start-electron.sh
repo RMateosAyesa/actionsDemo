@@ -10,4 +10,5 @@ xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' \
 --no-sandbox \
 --disable-gpu \
 --disable-software-rasterizer \
---disable-dev-shm-usage
+--disable-dev-shm-usage \
+--no-startup-window
