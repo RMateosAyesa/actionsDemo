@@ -39,8 +39,15 @@ jobs:
         curl -L -o ./app/DevaidStarter_Dev-4.1.1.AppImage https://github.com/RMateosAyesa/actionsDemo/releases/download/v4.1.1/DevaidStarter_Dev-4.1.1.AppImage
         chmod +x ./app/DevaidStarter_Dev-4.1.1.AppImage
 
+    - name: Make start-electron.sh executable
+      run: chmod +x ./start-electron.sh
+
     - name: Install dependencies
       run: npm ci
+
+    - name: Test if AppImage launches
+      run: ./app/DevaidStarter_Dev-4.1.1.AppImage --version
+
 
     - name: Install Playwright browsers
       run: npx playwright install
