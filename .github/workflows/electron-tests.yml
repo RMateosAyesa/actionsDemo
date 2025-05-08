@@ -31,7 +31,7 @@ jobs:
           libasound2t64 \
           libxss1 \
           libgtk-3-0 \
-          libfuse2
+          libfuse2 \
           dbus-x11
 
     - name: Download AppImage
