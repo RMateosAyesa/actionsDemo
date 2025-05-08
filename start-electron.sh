@@ -2,7 +2,7 @@
 set -e
 
 export ELECTRON_DISABLE_SANDBOX=true
-export DBUS_SESSION_BUS_ADDRESS=/dev/null
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-fake
 export DISPLAY=:99
 
 xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' \
