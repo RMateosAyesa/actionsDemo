@@ -55,10 +55,6 @@ jobs:
         timeout 5s ./app/DevaidStarter_Dev-4.1.1.AppImage --help || echo "AppImage launched and exited"
 
     - name: Run Playwright tests
-      run: |
-        export DISPLAY=:99
-        eval `dbus-launch --sh-syntax`
-        export DBUS_SESSION_BUS_ADDRESS
-        export DBUS_SESSION_BUS_PID
-        xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npx playwright test
+      run: xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npx playwright test
+
 
