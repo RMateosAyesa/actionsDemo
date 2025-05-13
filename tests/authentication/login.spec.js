@@ -15,7 +15,14 @@ describe("[Functional Test] Starter login", () => {
   test.beforeEach(async () => {
     try {
       electronApp = await _electron.launch({
-        executablePath: appImage,
+        args: [
+          appImage,
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-software-rasterizer'
+  ]
       });
     } catch (error) {
       console.error("Error launching Electron app:", error);
